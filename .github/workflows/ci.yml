@@ -26,12 +26,12 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v7
         with:
-          go-version: 1.27.1
+          go-version: 1.27.2
 
       - name: Install tools
         run: |
           go install mvdan.cc/gofumpt@v0.12.0
-          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+          go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
 
       - name: Format
         run: test -z "$(gofumpt -l .)"
@@ -55,9 +55,9 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            go: 1.26.8
-          - os: macos-latest
-            go: 1.27.1
+            go: 1.26.9
+          - os: xcode-27
+            go: 1.27.2
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
@@ -87,7 +87,7 @@ jobs:
         run: git diff --exit-code -- docs
 
   release-macos:
-    runs-on: macos-15
+    runs-on: xcode-27
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           # GOTOOLCHAIN=local makes go-version-file select the minimum Go line.
-          go-version: 1.27.1
+          go-version: 1.27.2
       - name: Check release metadata
         run: |
           ./scripts/check-release-metadata
@@ -107,7 +107,16 @@ jobs:
           args: release --snapshot --clean --skip=publish --parallelism=2
       - name: Check packaged CLI
         run: |
-          mkdir "$RUNNER_TEMP/release-smoke"
-          tar -xzf dist/gifgrep_*_darwin_arm64.tar.gz -C "$RUNNER_TEMP/release-smoke"
-          ./scripts/check-macos-target "$RUNNER_TEMP/release-smoke/gifgrep" darwin
-          "$RUNNER_TEMP/release-smoke/gifgrep" --version
+          arch -x86_64 /usr/bin/true || sudo softwareupdate --install-rosetta --agree-to-license
+          arch -x86_64 /usr/bin/true
+          for target in amd64 arm64; do
+            smoke="$RUNNER_TEMP/release-smoke-$target"
+            mkdir "$smoke"
+            tar -xzf dist/gifgrep_*_darwin_"$target".tar.gz -C "$smoke"
+            ./scripts/check-macos-target "$smoke/gifgrep" darwin
+            if [ "$target" = amd64 ]; then
+              arch -x86_64 "$smoke/gifgrep" --version
+            else
+              "$smoke/gifgrep" --version
+            fi
+          done

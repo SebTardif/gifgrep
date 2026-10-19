@@ -5,7 +5,7 @@ description: "Ship signed and notarized gifgrep binaries with the shared release
 
 # Releasing
 
-The `Release` workflow calls the Go CLI archetype from `openclaw/release-workflows`, pinned to v1.10.0 (`d22bcb545b8e43b51fb332be6bcd97b5e7d40234`). Its `personal` policy requires **Developer ID Application: Peter Steinberger (Y5PE65HELJ)** and the identifier `com.steipete.gifgrep.gifgrep`.
+The `Release` workflow calls the Go CLI archetype from `openclaw/release-workflows`, pinned to v1.11.8 (`fc49859568b3781af7663bee48c003fd987dc08b`). Its `personal` policy requires **Developer ID Application: Peter Steinberger (Y5PE65HELJ)** and the identifier `com.steipete.gifgrep.gifgrep`.
 
 ## Prepare
 
@@ -26,11 +26,13 @@ The four targets remain `darwin_amd64`, `darwin_arm64`, `linux_amd64`, and `linu
 
 ## macOS minimum
 
-Release binaries support **macOS 13.0 or newer**, the minimum emitted by the pinned Go 1.27 toolchain. GoReleaser uses `CGO_ENABLED=0` and `MACOSX_DEPLOYMENT_TARGET=13.0`; every Darwin build runs `scripts/check-macos-target`, which requires the actual Mach-O deployment target to equal 13.0. Both CI and release builds run on macOS so `otool` can inspect both architecture slices before publication.
+Release binaries support **macOS 13.0 or newer**, the minimum emitted by the pinned Go 1.27 toolchain. GoReleaser uses `CGO_ENABLED=0` and `MACOSX_DEPLOYMENT_TARGET=13.0`; every Darwin build runs `scripts/check-macos-target`, which requires the actual Mach-O deployment target to equal 13.0. Both CI and release builds use `xcode-27` so `otool` can inspect both architecture slices before publication; Intel CLI verification runs under Rosetta.
 
 The environment variable alone does not prove the binary minimum. If cgo is introduced, also supply `-mmacosx-version-min=13.0` in the C compiler and linker flags and keep this artifact check. Do not let the runner SDK silently raise the minimum.
 
 ## Dispatch
+
+Release dispatches default to `dry_run: true`: build, sign, and independently verify the selected main commit without creating a tag, publishing a release, or updating Homebrew. Use the current version for a verification run, for example `gh workflow run release.yml --ref main -f version=0.4.4 -f dry_run=true`.
 
 The repository must protect `main`, allow Actions read/write workflow permissions, and enable `can_approve_pull_request_reviews` so the workflow can open its closeout PR. Each workflow still declares its own limited permissions.
 
@@ -42,7 +44,7 @@ After the release PR merges, wait for CI on the exact `main` commit. Recheck the
 gh release list --repo steipete/gifgrep --limit 3 --json tagName
 git fetch origin --tags
 git tag --list 'v<version>'
-gh workflow run release.yml --repo steipete/gifgrep --ref main -f version=<version>
+gh workflow run release.yml --repo steipete/gifgrep --ref main -f version=<version> -f dry_run=false
 ```
 
 Do not create or push the tag manually. The shared workflow freezes the protected head, checks its CI and metadata, and creates an annotated tag. It builds without signing secrets, signs and notarizes the frozen Darwin binaries in a separate job, then independently verifies immutable release bytes on Intel and Apple Silicon. The publisher requires both attestations and re-downloads the draft assets to verify exact byte equality before publication. A failed run can be rerun against its frozen annotated tag; never move or replace that tag.

@@ -2,6 +2,9 @@
 
 ## 0.4.5 - Unreleased
 
+- Move macOS CI and release verification to Xcode 27 runners, retain the macOS 13 binary minimum, and smoke-test Intel archives under Rosetta.
+- Use patched Go 1.27.2 and compatible lint tooling, retain Go 1.26 source support, and add non-publishing shared release dry runs.
+
 ## 0.4.4 - 2026-09-22
 
 **Highlights:** Safer terminal output and bounded image reads, with frame extraction that follows the original GIF timeline.
