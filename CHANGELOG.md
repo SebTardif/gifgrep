@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 0.4.5 - 2026-10-20
 
 **Highlights:** Fix certificate validation vulnerability GO-2026-6809 in release binaries.
