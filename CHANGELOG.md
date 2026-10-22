@@ -2,6 +2,8 @@
 
 ## 0.4.6 - Unreleased
 
+- Extraction: stop at the requested frame cap before decoding, reject a GIF whose frames expand past the pixel budget, and still return the full timeline when every frame is requested.
+
 ## 0.4.5 - 2026-10-20
 
 **Highlights:** Fix certificate validation vulnerability GO-2026-6809 in release binaries.
