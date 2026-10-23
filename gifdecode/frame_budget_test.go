@@ -42,16 +42,16 @@ func TestFrameCapRejectsMalformedRetainedData(t *testing.T) {
 }
 
 func TestFrameCapMatchesCompleteDecode(t *testing.T) {
-	for _, cap := range []int{1, 2, 3, 4} {
+	for _, frameLimit := range []int{1, 2, 3, 4} {
 		opts := DefaultOptions()
-		opts.MaxFrames = cap
+		opts.MaxFrames = frameLimit
 		got, err := Decode(makeTestGIF(3), opts)
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := min(cap, 3)
+		want := min(frameLimit, 3)
 		if len(got.Frames) != want {
-			t.Fatalf("cap %d: got %d frames, want %d", cap, len(got.Frames), want)
+			t.Fatalf("cap %d: got %d frames, want %d", frameLimit, len(got.Frames), want)
 		}
 	}
 }
