@@ -15,7 +15,8 @@ const (
 )
 
 type Options struct {
-	// MaxFrames limits returned frames; zero uses the default, negative disables the limit.
+	// MaxFrames limits GIF decoding and returned frames; zero uses the default,
+	// negative decodes the complete animation. Data after a positive cap is ignored.
 	MaxFrames    int
 	MaxPixels    int
 	MaxBytes     int64

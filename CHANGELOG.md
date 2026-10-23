@@ -2,7 +2,7 @@
 
 ## 0.4.6 - Unreleased
 
-- Extraction: stop at the requested frame cap before decoding, reject a GIF whose frames expand past the pixel budget, and still return the full timeline when every frame is requested.
+- Decoding: enforce preview frame caps before allocating GIF frames, including malformed tails, while preserving complete-animation extraction. Thanks @SebTardif (#40).
 
 ## 0.4.5 - 2026-10-20
 
